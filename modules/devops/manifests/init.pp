@@ -51,6 +51,9 @@ class devops {
 	service { 'nginx':
 	        ensure => running,
 	        require => Package['nginx'],
+		hasrestart => true,
+		#require    => File['/etc/nginx/nginx.conf'],
+		restart    => 'systemctl restart nginx.service',
 	}
 	
 	service { 'php-fpm':
@@ -71,17 +74,37 @@ class devops {
 	}
 	
 	file { 'nginx/nginx.conf':
-	     ensure  => file,
+	     ensure  => present,
 	     path    => '/etc/nginx/nginx.conf',
 	     require => Package['nginx'],
 	}
 	
 	file { 'nginx-proxy.conf':
-	     ensure  => file,
+	     ensure  => present,
 	     path    => '/etc/nginx/conf.d/nginx-proxy.conf',
 	     require => Package['nginx'],
 	     notify  => Service['nginx'],
 	     source  => 'puppet:///modules/devops/nginx-proxy.conf',
 	}
 
+	file { 'nginx/conf.d/default.conf':
+		path    => '/etc/nginx/conf.d/default.conf',
+		ensure  => absent,
+		notify  => Service['nginx'],
+		require => Package['nginx'],
+	}
+
+        file { 'nginx/conf.d.d/php-fpm.conf':
+                path    => '/etc/nginx/conf.d/php-fpm.conf',
+                ensure  => absent,
+                notify  => Service['nginx'],
+                require => Package['nginx'],
+        }
+
+        file { 'nginx/default.d/php.conf':
+                path    => '/etc/nginx/default.d/php.conf',
+                ensure  => absent,
+                notify  => Service['nginx'],
+                require => Package['nginx'],
+        }
 }
