@@ -31,8 +31,21 @@ Vagrant.configure("2") do |config|
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
   # your network.
-  config.vm.network "public_network", bridge: "em1",
-    use_dhcp_assigned_default_route: true
+  config.vm.network "public_network", bridge: "em1", auto_config: false
+    #use_dhcp_assigned_default_route: true
+
+# Set Manual Public IP
+#  config.vm.provision "shell",
+#    run: "always",
+#    inline: "ifconfig eth2 192.168.18.30 netmask 255.255.255.0 up"
+#
+#  config.vm.provision "shell",
+#    run: "always",
+#    inline: "route add default gw 192.168.18.240"
+#
+#  config.vm.provision "shell",
+#    run: "always",
+#    inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
 
   # Share an additional folder to the guest VM. The first argument is
   # the path on the host to the actual folder. The second argument is
@@ -74,10 +87,27 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", :inline => <<-SHELL
     yum update -y
+    yum install -y net-tools
     rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
     yum install -y puppet
     puppet --version
   SHELL
+
+  config.vm.provision "shell",
+    run: "always",
+    inline: "yum install -y net-tools"
+
+  config.vm.provision "shell",
+    run: "always",
+    inline: "ifconfig eth2 192.168.18.30 netmask 255.255.255.0 up"
+
+  #config.vm.provision "shell",
+  #  run: "always",
+  #  inline: "route add default gw 192.168.18.240"
+
+  #config.vm.provision "shell",
+  #  run: "always",
+  #  inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
 
   # Provision via puppet.
   config.vm.provision :puppet do |puppet|
